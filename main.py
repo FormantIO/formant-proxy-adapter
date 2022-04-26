@@ -31,10 +31,12 @@ class WebSocketSession(threading.Thread):
                         if msg["signal"] == "close":
                             print("closing websocket for " + self.__id)
                             await self.__websocket.close()
+                            websocket_queues[self.__id] = None
                             return
                         elif msg["signal"] == "message":
                             await self.__websocket.send(msg["data"])
                         else:
+                            websocket_queues[self.__id] = None
                             print("unknown message")
                             print(msg)
                             raise Exception("unknown message")
@@ -74,10 +76,12 @@ class WebSocketSession(threading.Thread):
                         {"id": self.__id, "proxy_type": "ws", "event": "close"}
                     ).encode("utf-8"),
                 )
+                websocket_queues[self.__id] = None
 
         async def start():
-            print("starting websocket proxy")
+            print("starting websocket proxy for " + self.__id)
             await asyncio.gather(forward_messages(), listen_messages())
+            print("ending websocket proxy for " + self.__id)
 
         asyncio.run(start())
 
