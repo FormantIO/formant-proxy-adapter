@@ -1,28 +1,38 @@
-import os
 import time
 import json
-import pathlib
-import isodate
-import datetime
+import random
+import requests
 
-from onvif import ONVIFCamera
+from formant.sdk.agent.v1 import Client as FormantAgentClient
 
-from formant.sdk.agent.v1 import Client as FormantClient
-
-DEFAULT_ONVIF_IP = "192.168.1.110"
-DEFAULT_ONVIF_PORT = 80
-DEFAULT_ONVIF_USERNAME = "admin"
-DEFAULT_ONVIF_PASSWORD = "123456"
-DEFAULT_PTZ_RATE = 1.0
-DEFAULT_ZOOM_RATE = 0.5
-CONTINUOUS_MOVE_TIMEOUT = isodate.Duration(seconds=3)
-PUBLISH_THROTTLE_SECONDS = 5.0
-
-
-class FormantProxyAdapter:
-    def __init__(self):
-        print("Initializing Formant proxy adapter")
-
+CHANNEL_NAME = "http_websocket_proxy"
 
 if __name__ == "__main__":
-    FormantProxyAdapter()
+    fclient = FormantAgentClient("localhost:5501")
+
+    def example_channel_callback(message):
+        requestData = json.loads(message.payload)
+        if ("requestInit" in requestData) == False or requestData["requestInit"][
+            "method"
+        ] == "GET":
+            r = requests.get(requestData["requestInfo"])
+            fclient.send_on_custom_data_channel(
+                CHANNEL_NAME, r.text.encode("utf-8"),
+            )
+        elif requestData["requestInit"]["method"] == "POST":
+            r = requests.post(
+                requestData["requestInfo"], data=requestData["requestInit"]["body"]
+            )
+            fclient.send_on_custom_data_channel(
+                CHANNEL_NAME, r.text.encode("utf-8"),
+            )
+        else:
+            raise "Unsupported"
+
+    # Listen to data from the custom web application
+    fclient.register_custom_data_channel_message_callback(
+        example_channel_callback, channel_name_filter=[CHANNEL_NAME]
+    )
+
+    while True:
+        time.sleep(0.1)
