@@ -28,7 +28,16 @@ class WebSocketSession(threading.Thread):
                     pass
                 else:
                     if self.__websocket is not None:
-                        await self.__websocket.send(msg["data"])
+                        if msg["signal"] == "close":
+                            print("closing websocket for " + self.__id)
+                            await self.__websocket.close()
+                            return
+                        elif msg["signal"] == "message":
+                            await self.__websocket.send(msg["data"])
+                        else:
+                            print("unknown message")
+                            print(msg)
+                            raise Exception("unknown message")
                 await asyncio.sleep(0)
 
         async def listen_messages():
