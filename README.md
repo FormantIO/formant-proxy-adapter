@@ -4,7 +4,7 @@ This proxy can be used to communicate with an HTTP server running on a local rob
 
 This project has a few components:
 
-* an adapter in `main.py` that takes webrtc calls from the website, and translates them into http calls on the device
+* an adapter in `main.py` that takes webrtc calls from the website, and translates them into http calls on the device.  You can run it using `./start.sh`
 * a simple website for testing `simple_website.py` you can run with `export FLASK_APP=simple_website flask run`
 * an example website `frontend` that can e
   * setup using `cd frontend && yarn`
