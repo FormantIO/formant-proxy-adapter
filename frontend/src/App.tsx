@@ -3,12 +3,17 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import { Authentication, Fleet } from "@formant/data-sdk";
 import { createFetchRemote, Fetcher } from "./FetchRemote";
+import { WebSocketRemote } from "./WebsocketRemote";
 
 function App() {
   const [result, setResult] = useState<string>("");
+  const [wsResult, setWsResult] = useState<string>("");
   const [fetchRemote, setFetchRemote] = useState<Fetcher | undefined>(
     undefined
   );
+  const [websocketRemote, setWebsocketRemote] = useState<
+    WebSocketRemote | undefined
+  >(undefined);
   useEffect(() => {
     (async () => {
       if (!(await Authentication.waitTilAuthenticated())) {
@@ -21,6 +26,18 @@ function App() {
       );
       setFetchRemote(() => {
         return createFetchRemote(channel);
+      });
+
+      const ws = new WebSocketRemote(channel, "ws://localhost:6000/");
+      setWebsocketRemote(ws);
+      ws.addEventListener("open", () => {
+        setWsResult("web socket opened");
+      });
+      ws.addEventListener("close", () => {
+        setWsResult("web socket closed");
+      });
+      ws.addEventListener("message", (event) => {
+        setWsResult(JSON.stringify(event.data));
       });
     })();
   }, []);
@@ -42,18 +59,39 @@ function App() {
     }
   };
 
+  const sendMessage = () => {
+    if (websocketRemote) {
+      websocketRemote.send("hello" + new Date().toISOString());
+    }
+  };
+
+  const closeMessage = () => {
+    if (websocketRemote) {
+      websocketRemote.close();
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
         {!fetchRemote ? (
           <div>Loading...</div>
         ) : (
-          <div>
-            <button onClick={sendGet}>Send Get</button>
-            <button onClick={sendPost}>Send Post</button>
-          </div>
+          <>
+            <div>
+              Http:
+              <button onClick={sendGet}>Send Get</button>
+              <button onClick={sendPost}>Send Post</button>
+              <div>{result}</div>
+            </div>
+            <div>
+              Websocket:
+              <button onClick={sendMessage}>Send Message</button>
+              <button onClick={closeMessage}>Close</button>
+              <div>{wsResult}</div>
+            </div>
+          </>
         )}
-        <div>{result}</div>
       </header>
     </div>
   );

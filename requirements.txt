@@ -1,3 +1,6 @@
 isodate
 formant==1.61.*
 requests
+asyncio
+websockets
+sav.channels

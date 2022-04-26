@@ -25,16 +25,18 @@ interface RemoteFetchResponse {
   id: string;
   status_code: number;
   contents: string;
+  proxy_type: string;
 }
 
 export function createFetchRemote(channel: DataChannel): Fetcher {
   const requestListeners = new Map<string, (r: RemoteResult) => void>();
-  // Listen to data from the robot and log it to the screen
   channel.addListener((message) => {
     const r = JSON.parse(message) as RemoteFetchResponse;
-    const listener = requestListeners.get(r.id);
-    if (listener) {
-      listener(new RemoteResult(r));
+    if (r.proxy_type === "http") {
+      const listener = requestListeners.get(r.id);
+      if (listener) {
+        listener(new RemoteResult(r));
+      }
     }
   });
   return async function (
