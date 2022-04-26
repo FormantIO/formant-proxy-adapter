@@ -10,4 +10,4 @@ This project has a few components:
   * setup using `cd frontend && yarn`
   * and run `yarn dev`
 
-if run locally, you can add a custom view `http://localhost:9146/index.html?device={device_id}&auth={auth}`
+if run locally, you can add a custom view `http://localhost:9146/index.html?device={device_id}&auth={auth}` during development
