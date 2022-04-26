@@ -12,19 +12,27 @@ if __name__ == "__main__":
 
     def example_channel_callback(message):
         requestData = json.loads(message.payload)
+        id = requestData["id"]
+        print(message)
         if ("requestInit" in requestData) == False or requestData["requestInit"][
             "method"
         ] == "GET":
             r = requests.get(requestData["requestInfo"])
             fclient.send_on_custom_data_channel(
-                CHANNEL_NAME, r.text.encode("utf-8"),
+                CHANNEL_NAME,
+                json.dumps(
+                    {"id": id, "status_code": r.status_code, "contents": r.text}
+                ).encode("utf-8"),
             )
         elif requestData["requestInit"]["method"] == "POST":
             r = requests.post(
                 requestData["requestInfo"], data=requestData["requestInit"]["body"]
             )
             fclient.send_on_custom_data_channel(
-                CHANNEL_NAME, r.text.encode("utf-8"),
+                CHANNEL_NAME,
+                json.dumps(
+                    {"id": id, "status_code": r.status_code, "contents": r.text}
+                ).encode("utf-8"),
             )
         else:
             raise "Unsupported"

@@ -20,27 +20,25 @@ function App() {
         "http_websocket_proxy"
       );
       setFetchRemote(() => {
-        return createFetchRemote(channel, "localhost:5500");
-      });
-      // Listen to data from the robot and log it to the screen
-      channel.addListener((message) => {
-        setResult(message);
+        return createFetchRemote(channel);
       });
     })();
   }, []);
 
-  const sendGet = () => {
+  const sendGet = async () => {
     if (fetchRemote) {
-      fetchRemote("http://localhost:5000/test");
+      const result = await fetchRemote("http://localhost:5000/test");
+      setResult(result.status + " " + (await result.text()));
     }
   };
 
-  const sendPost = () => {
+  const sendPost = async () => {
     if (fetchRemote) {
-      fetchRemote("http://localhost:5000/test", {
+      const result = await fetchRemote("http://localhost:5000/test", {
         method: "POST",
         body: "hello",
       });
+      setResult(result.status + " " + (await result.text()));
     }
   };
 
